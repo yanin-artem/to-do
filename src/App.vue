@@ -3,7 +3,7 @@
     <div class="title has-text-centered">
       My ToDo
     </div>
-    <form @submit.prevent="addCart" class="mb-5">
+    <form @submit.prevent="addCard" class="mb-5">
       <div class="field is-grouped">
         <p class="control is-expanded">
           <input v-model="textContent" class="input" type="text" placeholder="Add To Do">
@@ -16,18 +16,25 @@
         </p>
       </div>
     </form>
-<div v-for="item in postData" :key="item.id" class="card mb-5">
+<div v-for="item in cardData"
+:key="item.id" 
+class="card mb-5"
+:class="{'has-background-success-light':item.done}">
   <div class="card-content">
     <div class="content">
       <div class="columns is-mobile is-vcentered">
-        <div class="column">
+        <div class="column"
+        :class="{'has-text-success line-throught':item.done}">
           {{ item.content }}
         </div>
         <div class="column is-5 has-text-right">
-          <button class="button is-light">
+          <button class="button is-light"
+          @click="item.done=!item.done"
+          :class="{'is-success': item.done}">
             &check; 
           </button>
-          <button class="button is-danger ml-2">
+          <button class="button is-danger ml-2"
+          @click="deleteCard(item.id)">
             &cross;
           </button>
         </div>
@@ -44,18 +51,22 @@ import {v4 as uuidv4} from 'uuid';
 
 const textContent = ref('')
 
-const postData = ref([])
+const cardData = ref([])
 
 
 
-const addCart = ()=>{
+const addCard = ()=>{
   const newToDo = {
     id: uuidv4(),
     content: textContent.value,
     done: false
   }
-  postData.value.unshift(newToDo);
+  cardData.value.unshift(newToDo);
   textContent.value='';
+}
+
+const deleteCard=(id)=>{
+  cardData.value = cardData.value.filter((card)=>card.id!=id);
 }
 </script>
 
@@ -66,6 +77,7 @@ const addCart = ()=>{
     max-width:  400px
     margin: 0 auto
     padding: 20px
-    
+    .line-throught
+      text-decoration: line-through
 
 </style>
