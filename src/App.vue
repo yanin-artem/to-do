@@ -54,7 +54,7 @@
               v-for="btn in status"
               :key="btn.name"
               @click="switchCard(item.id,btn.name)">
-              z
+                <img :src="`src/assets/img/${btn.id }.png`" alt="">
               </button>
             </div>
         </div>
@@ -69,7 +69,7 @@
     :key="screen.id" 
     :style="{'background':screen.color}"
     @click="Slide((screen.id-1)*100)">
-      да я
+      <img :src="`src/assets/img/${screen.id }.png`" alt="">    
     </button>
   </div>
 </template>
@@ -88,22 +88,26 @@ const status = [
   { 
     id: 1,
     name:'process',
-    color: '#fff'
+    color: '#fff',
+    path: ''
   },
   { 
     id: 2,
     name:'priority',
-    color: '#ffcb2f'
+    color: '#ffcb2f',
+    path: ''
   },
   { 
     id: 3,
     name:'work',
-    color: '#3eaf7c'
+    color: '#3eaf7c',
+    path: ''
   },
   { 
     id: 4,
     name:'family',
-    color:'#e06159'
+    color:'#e06159',
+    path: ''
   },
 ]
 
@@ -197,8 +201,13 @@ onSnapshot(cardDataCollectinRef, (querySnapshot) => {
           background: none
           border: none
           border-radius: 20px
+          width: 20px
+          height: 40px
           &:hover
             background: #f2f5fa
+          img
+            width: 20px
+            height: 20px
   .main-area
     max-width: 400px
     margin-bottom: 20px
@@ -215,4 +224,7 @@ onSnapshot(cardDataCollectinRef, (querySnapshot) => {
       height: 100%
       border: none
       border-radius: 20px 20px 0 0 
+      img
+        width: 50px
+        height: 50px
 </style>
