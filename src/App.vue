@@ -30,14 +30,14 @@
       <div class="card-content">
         <div class="content">
           <div class="columns is-mobile is-vcentered">
-            <div class="column text-item is-4"
+            <div class="column text-item is-6"
             :class="{ 'has-text-success line-throught': item.done }">
               {{ item.content }}
             </div>
-            <div class="column">
+            <div class="column is-2 has-text-grey-light">
               {{ item.status }}
             </div>
-            <div class="column is-5 has-text-right">
+            <div class="column is-4 has-text-right">
               <button class="button is-light"
               @click="toggleDone(item.id)"
               :class="{ 'is-success': item.done }">
@@ -87,25 +87,25 @@ const cardData = ref([])
 const status = [
   { 
     id: 1,
-    name:'process',
+    name:'общие',
     color: '#fff',
     path: ''
   },
   { 
     id: 2,
-    name:'priority',
+    name:'важно',
     color: '#ffcb2f',
     path: ''
   },
   { 
     id: 3,
-    name:'work',
+    name:'работа',
     color: '#3eaf7c',
     path: ''
   },
   { 
     id: 4,
-    name:'family',
+    name:'семья',
     color:'#e06159',
     path: ''
   },
