@@ -1,9 +1,11 @@
 <template>
-  <div class="wrapper">
+  <div class="wrapper"
+  ref="wrapper">
     <div v-for="screen in status"
     :key="screen.id" 
     :style="{ 'background': screen.color }"
     @wheel.self="wheelSlide($event)"
+    ref="area"
     class="area">
     <div class="main-area">
       <div class="title has-text-centered">
@@ -76,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import {
   collection,
   onSnapshot,
@@ -117,6 +119,9 @@ const status = [{
 const textContent = ref('')
 
 const cardData = ref([])
+
+const wrapper = ref();
+const area = ref();
 
 //firebase varibles
 
@@ -163,22 +168,20 @@ const switchCard = (id, status) => {
 //screen and ux methods
 
 const Slide = (value) => {
-  document.querySelector('.wrapper').style.transform = `translateX(-${value * 100}vw)`;
-  move = document.querySelector('.area').clientWidth * value;
+  wrapper.value.style.transform = `translateX(-${value * 100}vw)`;
+  move =document.querySelector('.area').clientWidth * value;
 }
 
-//вот тут не забыть спросить почему клиент видз не робит и про рефсы
 let move = 0;
-let wrapper = 0;
+const wrapperWidth = computed(()=>wrapper.value.clientWidth * 0.75);
 
 const wheelSlide = (e) => {
-  wrapper = document.querySelector('.wrapper').clientWidth * 0.75;
-  if (move > wrapper) {
-    move = wrapper;
+  if (move > wrapperWidth.value) {
+    move = wrapperWidth.value;
   }
   else if (move >= 0) {
-    move -= e.deltaY;
-    document.querySelector('.wrapper').style.transform = `translateX(-${move}px)`;
+    move-= e.deltaY;
+    wrapper.value.style.transform = `translateX(-${move}px)`;
   }
   else
     move = 0
