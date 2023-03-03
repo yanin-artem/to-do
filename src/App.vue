@@ -2,7 +2,8 @@
   <div class="wrapper">
     <div v-for="screen in status"
     :key="screen.id" 
-    :style="{'background':screen.color}"
+    :style="{ 'background': screen.color }"
+    @wheel.self="wheelSlide($event)"
     class="area">
     <div class="main-area">
       <div class="title has-text-centered">
@@ -23,7 +24,7 @@
     </form>
     </div>
     <div class="card-area">
-      <div v-for="item in Cardfilter(cardData,screen)"
+      <div v-for="item in Cardfilter(cardData, screen)"
       :key="item.id" 
       class="card mb-5"
       :class="{ 'has-background-success-light': item.done }">
@@ -53,8 +54,8 @@
               <button class="column sort-item"
               v-for="btn in status"
               :key="btn.name"
-              @click="switchCard(item.id,btn.name)">
-                <img :src="`src/assets/img/${btn.id }.png`" alt="">
+              @click="switchCard(item.id, btn.name)">
+                <img :src="`src/assets/img/${btn.id}.png`" alt="">
               </button>
             </div>
         </div>
@@ -67,58 +68,72 @@
     <button class="btn"
     v-for="screen in status"
     :key="screen.id" 
-    :style="{'background':screen.color}"
-    @click="Slide((screen.id-1)*100)">
-      <img :src="`src/assets/img/${screen.id }.png`" alt="">    
+    :style="{ 'background': screen.color }"
+    @click="Slide(screen.id - 1)">
+      <img :src="`src/assets/img/${screen.id}.png`" alt="">    
     </button>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted} from 'vue';
-import { collection, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from "firebase/firestore";
-import {db} from '@/firebase';
-const wrapper = ref(null)
+import { ref, onMounted } from 'vue';
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  doc,
+  deleteDoc,
+  updateDoc,
+  query, 
+  orderBy,
+} from "firebase/firestore";
+import { db } from '@/firebase';
+
+//VARIABLES AND CONST
+
+//local varibles
+
+const status = [{
+  id: 1,
+  name: 'общие',
+  color: '#fff',
+},
+{
+  id: 2,
+  name: 'важно',
+  color: '#ffcb2f',
+},
+{
+  id: 3,
+  name: 'работа',
+  color: '#3eaf7c',
+},
+{
+  id: 4,
+  name: 'семья',
+  color: '#e06159',
+},]
 
 const textContent = ref('')
 
 const cardData = ref([])
 
-const status = [
-  { 
-    id: 1,
-    name:'общие',
-    color: '#fff',
-    path: ''
-  },
-  { 
-    id: 2,
-    name:'важно',
-    color: '#ffcb2f',
-    path: ''
-  },
-  { 
-    id: 3,
-    name:'работа',
-    color: '#3eaf7c',
-    path: ''
-  },
-  { 
-    id: 4,
-    name:'семья',
-    color:'#e06159',
-    path: ''
-  },
-]
+//firebase varibles
 
-const cardDataCollectinRef=collection(db, "cardData");
+const cardDataCollectinRef = collection(db, "cardData");
+const cardDataCollectinQuery = query(cardDataCollectinRef, orderBy("date", "desc"));
 
-const addCard = async(status) => {
+//METHODS
+
+//card methods
+
+const addCard = async (status) => {
   await addDoc(cardDataCollectinRef, {
     content: textContent.value,
     done: false,
-    status: status
-});
+    status: status,
+    date: Date.now()
+  });
   textContent.value = '';
 }
 
@@ -126,44 +141,65 @@ const deleteCard = (id) => {
   deleteDoc(doc(cardDataCollectinRef, id));
 }
 
-const Slide = (value) => {
-  document.querySelector('.wrapper').style.transform = `translateX(-${value}vw)`;
-  console.log(value);
-  console.log('hello')
+//выводит карты в зависимости от экрана
+const Cardfilter = (cardData, screen) => {
+  return cardData.filter(card => card.status == screen.name)
 }
 
-const Cardfilter=(cardData,screen)=>{
-  return cardData.filter(card=>card.status==screen.name)
-}
-
-const toggleDone=(id)=>{
-  const index = cardData.value.findIndex((card)=>card.id===id);
-
+const toggleDone = (id) => {
+  const index = cardData.value.findIndex((card) => card.id === id);
   updateDoc(doc(cardDataCollectinRef, id), {
-  done: !cardData.value[index].done
-});
-}
-
-const switchCard=(id,status)=>{
-  updateDoc(doc(cardDataCollectinRef, id),{
-  status:status
+    done: !cardData.value[index].done
   });
 }
 
-onMounted(()=>{
-onSnapshot(cardDataCollectinRef, (querySnapshot) => {
-  const fbTodos = [];
-  querySnapshot.forEach((doc) => {
-    const todo={
-    id: doc.id,
-    content: doc.data().content,
-    done: doc.data().done,
-    status: doc.data().status
+//меняет статус карточки
+const switchCard = (id, status) => {
+  updateDoc(doc(cardDataCollectinRef, id), {
+    status: status
+  });
+}
+
+//screen and ux methods
+
+const Slide = (value) => {
+  document.querySelector('.wrapper').style.transform = `translateX(-${value * 100}vw)`;
+  move = document.querySelector('.area').clientWidth * value;
+}
+
+//вот тут не забыть спросить почему клиент видз не робит и про рефсы
+let move = 0;
+let wrapper = 0;
+
+const wheelSlide = (e) => {
+  wrapper = document.querySelector('.wrapper').clientWidth * 0.75;
+  if (move > wrapper) {
+    move = wrapper;
   }
-  fbTodos.push(todo);
+  else if (move >= 0) {
+    move -= e.deltaY;
+    document.querySelector('.wrapper').style.transform = `translateX(-${move}px)`;
+  }
+  else
+    move = 0
+}
+
+//request to the server
+
+onMounted(() => {
+  onSnapshot(cardDataCollectinQuery, (querySnapshot) => {
+    const fbTodos = [];
+    querySnapshot.forEach((doc) => {
+      const todo = {
+        id: doc.id,
+        content: doc.data().content,
+        done: doc.data().done,
+        status: doc.data().status
+      }
+      fbTodos.push(todo);
+    });
+    cardData.value = fbTodos;
   });
-  cardData.value=fbTodos;
-});
 })
 </script>
 
